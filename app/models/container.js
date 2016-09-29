@@ -1,13 +1,14 @@
 import Ember from 'ember';
-import Resource from 'ember-api-store/models/resource';
 import C from 'ui/utils/constants';
 import Util from 'ui/utils/util';
+import { denormalizeId, denormalizeIdArray } from 'ember-api-store/utils/denormalize';
+import Instance from 'ui/models/instance';
 
 const { getOwner } = Ember;
 
 let _allMounts;
 
-var Container = Resource.extend({
+var Container = Instance.extend({
   // Common to all instances
   requestedHostId            : null,
   primaryIpAddress           : null,
@@ -31,6 +32,10 @@ var Container = Resource.extend({
 
   _allMounts                 : null,
 
+  primaryHost                : denormalizeId('hostId', 'host'),
+  services                   : denormalizeIdArray('serviceIds'),
+  primaryService             : Ember.computed.alias('services.firstObject'),
+
   reservedKeys: [
     '_allMounts',
   ],
@@ -40,7 +45,7 @@ var Container = Resource.extend({
     this._super();
 
     // this.get('store') isn't set yet at init
-    var store = getOwner(this).lookup('store:main');
+    var store = getOwner(this).lookup('service:store');
     if ( !_allMounts )
     {
       _allMounts = store.allUnremoved('mount');
@@ -195,13 +200,6 @@ var Container = Resource.extend({
   }.property('state'),
 
   isManaged: Ember.computed.notEmpty('systemContainer'),
-  primaryHost: function() {
-    if ( this.get('hostId') )
-    {
-      return this.get('store').getById('host', this.get('hostId'));
-    }
-  }.property('hostId'),
-  primaryService: Ember.computed.alias('services.firstObject'),
 
   displayImage: function() {
     return (this.get('imageUuid')||'').replace(/^docker:/,'');
@@ -215,6 +213,7 @@ var Container = Resource.extend({
     }
   }.property('externalId'),
 
+  // @TODO PERF
   mounts: function() {
     return this.get('_allMounts').filterBy('instanceId', this.get('id'));
   }.property('_allMounts.@each.instanceId','id'),
@@ -225,14 +224,13 @@ var Container = Resource.extend({
       return ['removed','purged', 'inactive'].indexOf(mount.get('state')) === -1;
     });
   }.property('mounts.@each.state'),
+  // @TODO PERF
 });
 
 Container.reopenClass({
   reset: function() {
     _allMounts = null;
   },
-
-  alwaysInclude: ['services'],
 });
 
 export default Container;

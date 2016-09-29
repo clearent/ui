@@ -3,6 +3,7 @@ import Ember from 'ember';
 import C from 'ui/utils/constants';
 import Util from 'ui/utils/util';
 const { getOwner } = Ember;
+import { denormalizeInstanceArray } from 'ui/utils/denormalize-instance';
 
 // !! If you add a new one of these, you need to add it to reset() below too
 var _allMaps;
@@ -19,6 +20,8 @@ var Service = Resource.extend({
   intl: Ember.inject.service(),
   growl: Ember.inject.service(),
   modalService: Ember.inject.service('modal'),
+
+  instances: denormalizeInstanceArray('instanceIds'),
 
   actions: {
     activate() {
@@ -208,7 +211,7 @@ var Service = Resource.extend({
     this._super();
 
     // this.get('store') isn't set yet at init
-    var store = getOwner(this).lookup('store:main');
+    var store = getOwner(this).lookup('service:store');
 
     // Hack: keep only one copy of all the services and serviceconsumemaps
     // But you have to load service and serviceconsumemap beforehand somewhere...
@@ -375,16 +378,6 @@ var Service = Resource.extend({
       'loadbalancerservice','service'
     ].indexOf(this.get('type').toLowerCase()) >= 0;
   }.property('type'),
-
-  instanceCount: Ember.computed('instances.@each.state', function() {
-    let instances = (this.get('instances') || []);
-
-    let filtered = instances.filter((inst) => {
-      return C.REMOVEDISH_STATES.indexOf(inst.get('state').toLowerCase()) === -1;
-    });
-
-    return filtered;
-  }),
 
   isK8s: function() {
     return ['kubernetesservice'].indexOf(this.get('type').toLowerCase()) >= 0;

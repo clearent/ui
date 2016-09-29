@@ -7,7 +7,7 @@
     {{#if isMachine}}
       {{model.displayName}}
     {{else}}
-      {{#link-to "host" model.id}}{{model.displayName}}{{/link-to}}
+      <a href="{{href-to 'host' model.id}}">{{model.displayName}}</a>
       {{#if model.showTransitioningMessage}}
         <div class="pod-message {{if model.isError 'text-danger' 'text-muted'}}">
           {{model.transitioningMessage}}
@@ -36,7 +36,7 @@
 {{else}}
   <div class="pod-info">
     <div class="pod-info-container">
-      <div class="pod-info-item"><i class="icon icon-link"></i> {{format-ip ip=model.displayIp}}</div>
+      <div class="pod-info-item"><i class="icon icon-link"></i> {{format-ip model.displayIp}}</div>
       {{#if model.dockerBlurb}}
         <div class="pod-info-item"><i class="icon icon-docker"></i> {{model.dockerBlurb}}</div>
       {{/if}}

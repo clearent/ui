@@ -4,11 +4,13 @@ import Resource from 'ember-api-store/models/resource';
 import { byId as serviceById } from 'ui/models/service';
 import { formatMib } from 'ui/utils/util';
 import C from 'ui/utils/constants';
-
+import { getByInstanceId, denormalizeInstanceArray } from 'ui/utils/denormalize-instance';
 
 var Host = Resource.extend({
   type: 'host',
   modalService: Ember.inject.service('modal'),
+
+  instances: denormalizeInstanceArray('instanceIds'),
 
   actions: {
     activate: function() {
@@ -78,11 +80,6 @@ var Host = Resource.extend({
   }.property('actionLinks.{activate,deactivate,remove,purge,update}','machine','machine.links.config'),
 
 
-  instancesUpdated: 0,
-  onInstanceChanged: function() {
-    this.incrementProperty('instancesUpdated');
-  }.observes('instances.@each.{id,name,state}','instances.length'),
-
   state: function() {
     var host = this.get('hostState');
     var agent = this.get('agentState');
@@ -96,26 +93,13 @@ var Host = Resource.extend({
     }
   }.property('hostState','agentState'),
 
-  triedToGetIp: false,
-  displayIp: function() {
-    var obj = (this.get('ipAddresses')||[]).get('firstObject');
-    if ( obj )
-    {
-      return obj.get('address');
-    }
-    else if ( this && this.hasLink && this.hasLink('ipAddresses') && !this.get('triedToGetIp'))
-    {
-      this.set('triedToGetIp',true);
-      this.importLink('ipAddresses');
-    }
-
-    return null;
-  }.property('ipAddresses','ipAddresses.[]'),
+  displayIp: Ember.computed.alias('agentIpAddress'),
 
   displayName: function() {
     return this.get('name') || this.get('hostname') || '('+this.get('id')+')';
   }.property('name','hostname','id'),
 
+  //@TODO PERF
   machine: function() {
     var phid = this.get('physicalHostId');
     if ( !phid )
@@ -126,11 +110,12 @@ var Host = Resource.extend({
     var machine = this.get('store').getById('machine', phid);
     return machine;
   }.property('physicalHostId'),
+  //@TODO PERF
 
   osBlurb: function() {
     var out = this.get('info.osInfo.operatingSystem')||'';
 
-    out = out.replace(/\s+\(.*?\)/,''); // Remove details in quotes
+    out = out.replace(/\s+\(.*?\)/,''); // Remove details in parens
     out = out.replace('Red Hat Enterprise Linux Server','RHEL'); // That's kinda long
 
     var hasKvm = (this.get('labels')||{})[C.LABEL.KVM] === 'true';
@@ -233,21 +218,13 @@ var Host = Resource.extend({
         endpoint.service = serviceById(endpoint.serviceId);
       }
 
-      if ( !endpoint.instance ) {
-        endpoint.instance = store.getById('container', endpoint.instanceId);
-        if ( !endpoint.instanceId ) {
-          endpoint.instance = store.getById('virtualmachine', endpoint.instanceId);
-        }
-      }
-
+      endpoint.instance = getByInstanceId(store, endpoint.instanceId);
       return endpoint;
     });
   }.property('publicEndpoints.@each.{ipAddress,port,serviceId,instanceId}'),
 });
 
 Host.reopenClass({
-  alwaysInclude: ['instances','ipAddresses'],
-
   // Remap the host state to hostState so the regular state can be a computed combination of host+agent state.
   mangleIn: function(data) {
     data['hostState'] = data['state'];
