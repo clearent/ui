@@ -75,6 +75,13 @@
             classNames="form-control"
           }}
         </div>
+        <div>
+          <label class="r-pt5 r-pb5">{{format-html-message 'editBalancerService.haproxy.backend.label'}}</label>
+          <div>
+            <label>{{format-html-message 'editBalancerService.haproxy.backend.prompt'}}</label>
+            {{input type="checkbox" checked=haproxyConfig.backendSsl}}
+          </div>
+        </div>
       </div>
     </div>
   </section>

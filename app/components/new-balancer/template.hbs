@@ -97,6 +97,15 @@
         }}
       </div>
     </div>
+    <div class="row form-group">
+      <div class="col-md-6">
+        <label class="r-pt5 r-pb5">{{format-html-message 'newBalancer.labelBackend'}}</label>
+        <div>
+          <label>{{format-html-message 'newBalancer.labelBackendSsl'}}</label>
+          {{input type="checkbox" checked=haproxyConfig.backendSsl }}
+        </div>
+      </div>
+    </div>
   </div>
 
   <div class="section" data-section="labels">
