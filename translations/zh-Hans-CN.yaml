@@ -2444,7 +2444,8 @@ newBalancer:
     <p class="help-block">此处可以设置其他 <a href="http://cbonte.github.io/haproxy-dconv/configuration-1.5.html" target="_blank">haproxy.cfg</a> 配置项，相关内容将被附加到 {appName} 生成的配置中。 </p>
   labelGlobal: <code>global</code> section
   labelDefault: <code>defaults</code> section
-
+  labelBackend: <code>backend</code> section
+  labelBackendSsl: Use SSL
 
 newCatalog:
   version:

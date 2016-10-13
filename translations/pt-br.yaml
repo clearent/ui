@@ -2167,7 +2167,8 @@ newBalancer:
     <p class="help-block">Configuração adicionais <a href="http://cbonte.github.io/haproxy-dconv/configuration-1.5.html" target="_blank">haproxy.cfg</a> pode ser colocado aqui e será acrescentada à configuração gerada pelo {appName}.</p>
   labelGlobal: seções <code>global</code>
   labelDefault: seções <code>padrões</code>
-
+  labelBackend: <code>backend</code> section
+  labelBackendSsl: Use SSL
 
 newCatalog:
   version:
